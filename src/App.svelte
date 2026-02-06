@@ -2,11 +2,11 @@
   import { onMount } from 'svelte';
 
   // States
-  type GameState = 'login' | 'loading' | 'asking' | 'wrong-answer' | 'try-again-meme' | 'success';
+  type GameState = 'login' | 'loading' | 'asking' | 'wrong-answer' | 'second-meme' | 'try-again' | 'success-gif1' | 'success-gif2' | 'success';
   let state: GameState = 'login';
 
   // Fake loading GIF - the happy dance
-  const LOADING_IMAGE = 'https://media1.tenor.com/m/bKL2dgh30OoAAAAC/happy-dance-so-happy.gif';
+  const LOADING_IMAGE = '/gifs/loading-dance.gif';
   let hearts: { id: number; x: number; delay: number; duration: number; size: number }[] = [];
   let celebrationHearts: { id: number; x: number; y: number; rotation: number }[] = [];
 
@@ -23,19 +23,23 @@
 
   // Slideshow images for the main page
   const SLIDESHOW_IMAGES = [
-    { url: 'https://media1.tenor.com/m/dhuQV_msfiUAAAAC/cat-gun.gif', text: 'u better say yes' },
-    { url: 'https://media1.tenor.com/m/m5d96XUUBPIAAAAC/gohan-its-so-peak.gif', text: '' },
-    { url: 'https://media1.tenor.com/m/LHsLu8aHttsAAAAC/green-fn-steph-curry.gif', text: 'lemme shoot my shot' },
-    { url: 'https://media1.tenor.com/m/OsDe3p5xO1MAAAAC/raimbow-dislexia.gif', text: '' },
+    { url: '/gifs/cat-gun.gif', text: 'u better say yes' },
+    { url: '/gifs/gohan-peak.gif', text: '' },
+    { url: '/gifs/steph-curry.gif', text: 'lemme shoot my shot' },
+    { url: '/gifs/spongebob-rainbow.gif', text: '' },
   ];
   let currentSlide = 0;
   let slideInterval: ReturnType<typeof setInterval>;
 
-  // Placeholder meme URLs - Replace these with actual memes!
-  // Put your images in public/memes/ and use paths like '/memes/wrong-answer.jpg'
-  const WRONG_ANSWER_MEME = 'https://via.placeholder.com/800x600/ff6b9d/ffffff?text=WRONG+ANSWER!+%F0%9F%98%A4';
-  const TRY_AGAIN_GIF = 'https://via.placeholder.com/800x600/e91e63/ffffff?text=Try+Again+GIF+%F0%9F%98%82';
-  const SUCCESS_MEME = 'https://via.placeholder.com/400x300/4caf50/ffffff?text=YAY!+%F0%9F%92%95';
+  // Meme URLs for the No button sequence
+  const WRONG_ANSWER_GIF = '/gifs/stitch-rain.gif';
+  const SECOND_MEME_GIF = '/gifs/fumble.gif';
+  const TRY_AGAIN_GIF = '/gifs/try-again.gif';
+
+  // Success sequence
+  const SUCCESS_GIF_1 = '/gifs/dog-meme.gif';
+  const SUCCESS_GIF_2 = '/gifs/dwight-win.gif';
+  const FINAL_PHOTO = '/images/final-photo.png';
 
   // Tiredness levels - every 3 hovers it gets more tired
   $: tirednessLevel = Math.floor(noHoverCount / 3);
@@ -86,12 +90,27 @@
     }
   }
 
+  function resetInterval() {
+    // Reset the timer when manually changing slides
+    stopSlideshow();
+    slideInterval = setInterval(() => {
+      currentSlide = (currentSlide + 1) % SLIDESHOW_IMAGES.length;
+    }, 3000);
+  }
+
   function nextSlide() {
     currentSlide = (currentSlide + 1) % SLIDESHOW_IMAGES.length;
+    resetInterval();
   }
 
   function prevSlide() {
     currentSlide = (currentSlide - 1 + SLIDESHOW_IMAGES.length) % SLIDESHOW_IMAGES.length;
+    resetInterval();
+  }
+
+  function goToSlide(i: number) {
+    currentSlide = i;
+    resetInterval();
   }
 
   function handleLogin() {
@@ -148,30 +167,49 @@
     stopSlideshow();
 
     // Show wrong answer sequence
+    // Step 1: Stitch in rain for 5 seconds
     state = 'wrong-answer';
 
+    // Step 2: Fumble GIF for 5 seconds
     setTimeout(() => {
-      state = 'try-again-meme';
-    }, 1500);
+      state = 'second-meme';
+    }, 5000);
 
+    // Step 3: Back to asking page with "try again" overlay for 3 seconds
+    setTimeout(() => {
+      state = 'try-again';
+      startSlideshow();
+    }, 10000);
+
+    // Step 4: Back to normal
     setTimeout(() => {
       state = 'asking';
-      startSlideshow(); // Restart slideshow
       // Don't reset hover count - button stays tired!
-    }, 4000);
+    }, 13000);
   }
 
   function handleYesClick() {
     stopSlideshow();
-    state = 'success';
 
-    // Create celebration hearts explosion
-    celebrationHearts = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      rotation: Math.random() * 360,
-    }));
+    // Step 1: First GIF (dog) - fade in, 3 seconds
+    state = 'success-gif1';
+
+    // Step 2: Second GIF (Dwight) - 3 seconds
+    setTimeout(() => {
+      state = 'success-gif2';
+    }, 3000);
+
+    // Step 3: Final photo with celebration
+    setTimeout(() => {
+      state = 'success';
+      // Create celebration hearts explosion
+      celebrationHearts = Array.from({ length: 50 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        rotation: Math.random() * 360,
+      }));
+    }, 6000);
   }
 </script>
 
@@ -283,12 +321,14 @@
       <div class="slideshow-container">
         <button class="slide-btn prev" on:click={prevSlide}>❮</button>
 
-        <div class="slide">
-          <img src={SLIDESHOW_IMAGES[currentSlide].url} alt="Slide {currentSlide + 1}" />
-          {#if SLIDESHOW_IMAGES[currentSlide].text}
-            <div class="slide-text">{SLIDESHOW_IMAGES[currentSlide].text}</div>
-          {/if}
-        </div>
+        {#key currentSlide}
+          <div class="slide">
+            <img src={SLIDESHOW_IMAGES[currentSlide].url} alt="Slide {currentSlide + 1}" />
+            {#if SLIDESHOW_IMAGES[currentSlide].text}
+              <div class="slide-text">{SLIDESHOW_IMAGES[currentSlide].text}</div>
+            {/if}
+          </div>
+        {/key}
 
         <button class="slide-btn next" on:click={nextSlide}>❯</button>
 
@@ -297,8 +337,8 @@
             <span
               class="dot"
               class:active={i === currentSlide}
-              on:click={() => currentSlide = i}
-              on:keydown={(e) => e.key === 'Enter' && (currentSlide = i)}
+              on:click={() => goToSlide(i)}
+              on:keydown={(e) => e.key === 'Enter' && goToSlide(i)}
               role="button"
               tabindex="0"
             ></span>
@@ -321,7 +361,7 @@
           class:very-tired={tirednessLevel >= 2}
           class:exhausted={tirednessLevel >= 4}
           class:given-up={hasGivenUp}
-          style={noButtonMoved && !hasGivenUp ? `
+          style={noButtonMoved ? `
             position: fixed;
             left: ${noButtonPosition.x}px;
             top: ${noButtonPosition.y}px;
@@ -343,16 +383,35 @@
 
   {:else if state === 'wrong-answer'}
     <div class="fullscreen-meme">
-      <h2 class="wrong-title">WRONG ANSWER!</h2>
-      <!-- PLACEHOLDER: Replace with actual "wrong answer" meme/photo -->
-      <img src={WRONG_ANSWER_MEME} alt="Wrong Answer Meme" class="big-meme-image" />
+      <!-- Stitch in the rain - 5 seconds -->
+      <img src={WRONG_ANSWER_GIF} alt="Wrong Answer" class="big-meme-image sixty-percent" />
     </div>
 
-  {:else if state === 'try-again-meme'}
+  {:else if state === 'second-meme'}
     <div class="fullscreen-meme">
-      <!-- PLACEHOLDER: Replace with a funny GIF -->
-      <img src={TRY_AGAIN_GIF} alt="Try Again GIF" class="big-meme-image" />
-      <p class="meme-caption">Let's try this again... 😂</p>
+      <!-- Fumble GIF - 5 seconds -->
+      <img src={SECOND_MEME_GIF} alt="Fumble" class="big-meme-image" />
+    </div>
+
+  {:else if state === 'try-again'}
+    <!-- Try again overlay on top of the main page -->
+    <div class="card">
+      <h1 class="title">Will You Be My Valentine?</h1>
+      <div class="try-again-overlay">
+        <img src={TRY_AGAIN_GIF} alt="Try Again" class="try-again-gif" />
+      </div>
+    </div>
+
+  {:else if state === 'success-gif1'}
+    <!-- First success GIF - Dog meme with fade in -->
+    <div class="success-gif-container fade-in">
+      <img src={SUCCESS_GIF_1} alt="Yes!" class="success-gif" />
+    </div>
+
+  {:else if state === 'success-gif2'}
+    <!-- Second success GIF - Dwight win -->
+    <div class="success-gif-container fade-in">
+      <img src={SUCCESS_GIF_2} alt="Winner!" class="success-gif" />
     </div>
 
   {:else if state === 'success'}
@@ -372,16 +431,15 @@
         </div>
       {/each}
 
-      <div class="success-content">
+      <div class="success-content fade-in">
         <h1 class="success-title">YAAAY! 🎉💕</h1>
         <p class="success-message">I knew you'd say yes!</p>
 
-        <!-- PLACEHOLDER: Replace with celebration meme/gif -->
-        <img src={SUCCESS_MEME} alt="Success!" class="meme-image" />
+        <!-- Your special photo -->
+        <img src={FINAL_PHOTO} alt="Us!" class="final-photo" />
 
-        <!-- PLACEHOLDER: Add a personal message here -->
         <div class="personal-message">
-          <p>💌 Your sweet message here! 💌</p>
+          <p>💌 Happy Valentine's Day! 💌</p>
         </div>
 
         <div class="hearts-row">
@@ -841,11 +899,9 @@
   .no-btn.given-up {
     animation: none;
     background: #ffcccc;
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    opacity: 0.7;
+    opacity: 0.8;
     cursor: pointer;
+    /* Stays frozen in place - no position override */
   }
 
   @keyframes wobble {
@@ -910,11 +966,78 @@
     object-fit: contain;
   }
 
+  .big-meme-image.sixty-percent {
+    max-width: 60vw;
+    max-height: 60vh;
+  }
+
+  /* Try again overlay */
+  .try-again-overlay {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem auto;
+  }
+
+  .try-again-gif {
+    width: 280px;
+    max-width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+
   .meme-caption {
     color: white;
     font-size: 1.5rem;
     margin-top: 1.5rem;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Success GIF sequence */
+  .success-gif-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #ff6b9d 0%, #ff8a80 50%, #ffab91 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .success-gif {
+    max-width: 70vw;
+    max-height: 70vh;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    object-fit: contain;
+  }
+
+  .fade-in {
+    animation: fadeInScale 0.5s ease forwards;
+  }
+
+  @keyframes fadeInScale {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .final-photo {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin: 1rem 0;
+    object-fit: cover;
   }
 
   /* Success screen */
