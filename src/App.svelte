@@ -439,7 +439,7 @@
         <img src={FINAL_PHOTO} alt="Us!" class="final-photo" />
 
         <div class="personal-message">
-          <p>💌 Happy Valentine's Day! 💌</p>
+          <p>will u join me for thai food and chill? 🍜❤️</p>
         </div>
 
         <div class="hearts-row">
