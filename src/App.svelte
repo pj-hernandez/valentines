@@ -14,8 +14,7 @@
   let password = '';
   let loginError = '';
   let isLoading = false;
-  const CORRECT_PASSWORD = 'iloveyou'; // CHANGE THIS to your password!
-
+  const CORRECT_PASSWORD = 'bitchinbayonne';
   // No button state
   let noHoverCount = 0;
   let noButtonPosition = { x: 0, y: 0 };
@@ -23,22 +22,22 @@
 
   // Slideshow images for the main page
   const SLIDESHOW_IMAGES = [
-    { url: '/gifs/cat-gun.gif', text: 'u better say yes' },
-    { url: '/gifs/gohan-peak.gif', text: '' },
-    { url: '/gifs/steph-curry.gif', text: 'lemme shoot my shot' },
-    { url: '/gifs/spongebob-rainbow.gif', text: '' },
+    { url: '/gifs/selena-gomez.gif', text: 'u better say yes' },
+    { url: '/gifs/jalen-brunson.gif', text: 'lemme shoot my shot mami' },
+    { url: '/gifs/eternal-sunshine.gif', text: 'Meet me in Montauk' },
+    { url: '/gifs/brat.gif', text: '' },
   ];
   let currentSlide = 0;
   let slideInterval: ReturnType<typeof setInterval>;
 
   // Meme URLs for the No button sequence
   const WRONG_ANSWER_GIF = '/gifs/stitch-rain.gif';
-  const SECOND_MEME_GIF = '/gifs/fumble.gif';
+  const SECOND_MEME_GIF = '/gifs/pride-n-prejudice.gif';
   const TRY_AGAIN_GIF = '/gifs/try-again.gif';
 
   // Success sequence
-  const SUCCESS_GIF_1 = '/gifs/dog-meme.gif';
-  const SUCCESS_GIF_2 = '/gifs/dwight-win.gif';
+  const SUCCESS_GIF_1 = '/gifs/bad-bunny.gif';
+  const SUCCESS_GIF_2 = '/gifs/paul-revere.gif';
   const FINAL_PHOTO = '/images/final-photo.png';
 
   // Tiredness levels - every 3 hovers it gets more tired
@@ -315,7 +314,7 @@
 
   {#if state === 'asking'}
     <div class="card">
-      <h1 class="title">Will You Be My Valentine?</h1>
+      <h1 class="title">Lilian, will you be my valentine?</h1>
 
       <!-- GIF Slideshow -->
       <div class="slideshow-container">
@@ -396,7 +395,7 @@
   {:else if state === 'try-again'}
     <!-- Try again overlay on top of the main page -->
     <div class="card">
-      <h1 class="title">Will You Be My Valentine?</h1>
+      <h1 class="title">Lilian, will you be my valentine?</h1>
       <div class="try-again-overlay">
         <img src={TRY_AGAIN_GIF} alt="Try Again" class="try-again-gif" />
       </div>
@@ -439,7 +438,7 @@
         <img src={FINAL_PHOTO} alt="Us!" class="final-photo" />
 
         <div class="personal-message">
-          <p>will u join me for thai food and chill? 🍜❤️</p>
+          <p>join me for a movie and Omakase? 🍣❤️</p>
         </div>
 
         <div class="hearts-row">
